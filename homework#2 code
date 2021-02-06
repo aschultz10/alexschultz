@@ -1,0 +1,84 @@
+
+Sub Schultz_Homework_2()
+
+Dim WS As Worksheet
+    For Each WS In ActiveWorkbook.Worksheets
+    WS.Activate
+        LastRow = WS.Cells(Rows.Count, 1).End(xlUp).row
+        
+        'Place headers in columns
+        Cells(1, "I").Value = "Ticker"
+        Cells(1, "J").Value = "Yearly Change"
+        Cells(1, "K").Value = "Percent Change"
+        Cells(1, "L").Value = "Total Stock Volume"
+        'Define and store variables
+        Dim ticker As String
+        Dim openprice As Double
+        Dim closeprice As Double
+        Dim yearchange As Double
+        Dim percentchange As Double
+        Dim volume As Double
+        Dim row As Integer
+        Dim column As Integer
+        row = 2
+        column = 1
+        openprice = Cells(2, "C").Value
+             
+        'Return values, calculate year change and percent change, shift down each row
+        For i = 2 To LastRow
+            If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+                ticker = Cells(i, 1).Value
+                Cells(row, "I").Value = ticker
+                closeprice = Cells(i, "F").Value
+                yearchange = closeprice - openprice
+                Cells(row, "J").Value = yearchange
+                If openprice = 0 And closeprice = 0 Then
+                    percentchange = 0
+                ElseIf openprice = 0 And closeprice <> 0 Then
+                    percentchange = 1
+                Else
+                    percentchange = yearchange / openprice
+                    Cells(row, "K").Value = percentchange
+                    Cells(row, "K").NumberFormat = "0.00%"
+                End If
+                
+                volume = volume + Cells(i, "G").Value
+                Cells(row, "L").Value = volume
+                row = row + 1
+                openprice = Cells(i + 1, "C")
+                volume = 0
+            Else
+                volume = volume + Cells(i, "G").Value
+            End If
+        Next i
+
+        For j = 2 To LastRow
+            If (Cells(j, "J").Value > 0 Or Cells(j, "J").Value = 0) Then
+                Cells(j, "J").Interior.ColorIndex = 10
+            ElseIf Cells(j, "J").Value < 0 Then
+                Cells(j, "J").Interior.ColorIndex = 3
+            End If
+        Next j
+        
+        Cells(2, "O").Value = "Greatest % Increase"
+        Cells(3, "O").Value = "Greatest % Decrease"
+        Cells(4, "P").Value = "Greatest Total Volume"
+        Cells(1, "Q").Value = "Ticker"
+        Cells(1, "R").Value = "Value"
+'    return values to the cells above
+        For k = 2 To LastRow
+            if Cells(k, "K").Value = Application.WorksheetFunction.Max(WS.Range("K2:K" & LastRow)) Then
+                Cells(k, "Q").Value = Cells(k, "I").Value
+                Cells(k, "R").Value = Cells(k, "K").Value
+                Cells(k, "R").NumberFormat = "0.00%"
+            Elseif Cells(k, "K").Value = Application.WorksheetFunction.Min(WS.Range("K2:K" & LastRow)) Then
+                Cells(k + 1, "Q").Value = Cells(k, "I").Value
+                Cells(k + 1, "R").Value = Cells(k, "K").Value
+                Cells(k + 1, "R").NumberFormat = "0.00%"
+            Elseif Cells(k, "G").Value = Application.WorksheetFunction.Max(WS.Range("L2:L" & LastRow)) Then
+                Cells(k + 2, "Q").Value = Cells(k, "I").Value
+                Cells(k + 2, "R").Value = Cells(k, "L").Value
+            End If
+        Next i
+    Next WS
+End Sub
